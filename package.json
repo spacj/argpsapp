@@ -1,0 +1,17 @@
+{
+  "name": "qr-code-app",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "jsqr": "^1.4.0",
+    "live-server": "^1.2.2",
+    "three": "^0.169.0"
+  }
+}
