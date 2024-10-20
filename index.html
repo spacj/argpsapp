@@ -1,30 +1,57 @@
-<script>
-  // Check for camera permissions
-  if (navigator.permissions) {
-    navigator.permissions.query({ name: 'camera' }).then(permission => {
-      if (permission.state === 'denied' || permission.state === 'prompt') {
-        console.error('Camera access denied or not granted.');
-        alert('Please allow camera access for AR functionality.');
-      } else {
-        // If permission is granted, access the camera
-        startCamera();
-      }
-    });
-  } else {
-    // If the browser doesn't support permissions API, directly try to start the camera
-    startCamera();
-  }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Switch Camera</title>
+  <style>
+    video { width: 100%; height: auto; }
+    button { position: absolute; top: 10px; left: 10px; z-index: 100; padding: 10px; }
+  </style>
+</head>
+<body>
+  <!-- Button to Switch Camera -->
+  <button id="switchCamera">Switch Camera</button>
 
-  function startCamera() {
+  <!-- Video element for Camera Feed -->
+  <video id="cameraFeed" autoplay playsinline></video>
+
+  <!-- Script to Handle Camera Switching -->
+  <script>
+    let currentStream = null;
+    let usingFrontCamera = true; // Start with the front camera by default
+
     const video = document.getElementById('cameraFeed');
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then((stream) => {
-        video.srcObject = stream;
-        console.log('Camera access granted and feed is playing.');
-      })
-      .catch((err) => {
-        console.error('Camera access denied:', err);
-        alert('Failed to access camera: ' + err.message);
-      });
-  }
-</script>
+    const switchCameraBtn = document.getElementById('switchCamera');
+
+    // Function to start the camera with the specified facing mode
+    function startCamera(facingMode) {
+      if (currentStream) {
+        // Stop the existing stream before starting a new one
+        currentStream.getTracks().forEach(track => track.stop());
+      }
+
+      // Access the camera with the specified facing mode
+      navigator.mediaDevices.getUserMedia({ video: { facingMode } })
+        .then((stream) => {
+          currentStream = stream;
+          video.srcObject = stream;
+          console.log(`Camera feed using ${facingMode} camera.`);
+        })
+        .catch((err) => {
+          console.error('Failed to access camera:', err);
+        });
+    }
+
+    // Start with the front camera initially
+    startCamera('user');
+
+    // Switch camera when button is clicked
+    switchCameraBtn.addEventListener('click', () => {
+      usingFrontCamera = !usingFrontCamera;
+      const facingMode = usingFrontCamera ? 'user' : 'environment'; // 'user' is front camera, 'environment' is back camera
+      startCamera(facingMode);
+    });
+  </script>
+</body>
+</html>
