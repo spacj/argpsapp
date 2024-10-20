@@ -3,20 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Switch Camera</title>
+  <title>GPS AR with Camera Switching</title>
+
+  <!-- A-Frame and AR.js Libraries -->
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-ar.js@3.3.2/aframe-ar-nft.min.js"></script>
+  <script src="https://unpkg.com/aframe-gps-projected-component@0.1.1/dist/aframe-gps-projected-component.min.js"></script>
+
   <style>
-    video { width: 100%; height: auto; }
-    button { position: absolute; top: 10px; left: 10px; z-index: 100; padding: 10px; }
+    video { width: 100%; height: auto; display: none; }
+    button { position: absolute; top: 10px; left: 10px; z-index: 100; padding: 10px; background-color: #007bff; color: white; border: none; cursor: pointer; }
   </style>
 </head>
 <body>
-  <!-- Button to Switch Camera -->
+  <!-- Button to Switch Between Cameras -->
   <button id="switchCamera">Switch Camera</button>
 
   <!-- Video element for Camera Feed -->
   <video id="cameraFeed" autoplay playsinline></video>
 
-  <!-- Script to Handle Camera Switching -->
+  <!-- A-Frame Scene with GPS-based Object Positioning -->
+  <a-scene vr-mode-ui="false" embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <!-- Camera Entity -->
+    <a-entity camera gps-projected-camera rotation-reader></a-entity>
+
+    <!-- 3D Object Positioned via GPS -->
+    <a-box color="red" gps-projected-entity-place="latitude: 52.5200; longitude: 13.4050;" 
+           scale="2 2 2" rotation="0 45 0"></a-box>
+  </a-scene>
+
   <script>
     let currentStream = null;
     let usingFrontCamera = true; // Start with the front camera by default
