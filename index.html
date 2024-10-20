@@ -3,73 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Markerless AR with A-Frame</title>
+  <title>QR AR App with AR.js</title>
   <style>
-    body { margin: 0; overflow: hidden; }
-    a-scene { position: absolute; width: 100%; height: 100%; }
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    a-scene {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+    }
   </style>
-  <!-- A-Frame -->
+  <!-- A-Frame library -->
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  <!-- AR.js -->
+  <!-- AR.js library (stable version) -->
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar-nft.min.js"></script>
 </head>
 <body>
-  <a-scene embedded arjs="sourceType: webcam; canvasWidth: 640; canvasHeight: 480;">
-    <!-- Lighting setup -->
-    <a-light type="ambient" color="#ffffff"></a-light>
-    <a-light type="point" intensity="1" position="2 4 4"></a-light>
+  <!-- A-Frame scene (AR.js uses A-Frame for declarative 3D rendering) -->
+  <a-scene embedded 
+           vr-mode-ui="enabled: false" 
+           renderer="logarithmicDepthBuffer: true; antialias: true;" 
+           arjs="sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; 
+                 debugUIEnabled: false; canvasWidth: 640; canvasHeight: 480;">
 
-    <!-- The camera element -->
-    <a-entity camera></a-entity>
-
-    <!-- The Hiro marker used for initial detection -->
-    <a-marker preset="hiro" id="hiro-marker" visible="false">
-      <!-- This is only for detection, not for rendering objects -->
+    <!-- Marker that detects the QR code or marker-based reference -->
+    <a-marker preset="hiro">
+        <!-- 3D object (a box in this case) -->
+      <a-box position="0 0.5 0" material="color: red;"></a-box>
     </a-marker>
 
-    <!-- The object that will appear and be anchored -->
-    <a-entity id="my-object" geometry="primitive: box; width: 1; height: 1; depth: 1;" material="color: red;" scale="2 2 2" position="0 0 -1"></a-entity>
-
+    <!-- Camera -->
+    <a-entity camera></a-entity>
   </a-scene>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const marker = document.querySelector('#hiro-marker');
-      const object3D = document.querySelector('#my-object');
-      let isObjectAnchored = false;
-      let anchoredPosition = new THREE.Vector3();
-
-      // When the marker is found, anchor the object and stop further detection
-      marker.addEventListener('markerFound', () => {
-        if (!isObjectAnchored) {
-          console.log('Hiro marker detected!');
-
-          // Get and save the object's world position
-          const markerPosition = marker.object3D.getWorldPosition(new THREE.Vector3());
-          console.log('Marker position:', markerPosition);
-
-          // Save the object's position
-          anchoredPosition.copy(markerPosition);
-
-          // Now that the object is anchored, move it out of the marker, but keep it in world space
-          object3D.object3D.position.copy(anchoredPosition);
-
-          // Make sure the object is visible and stop tracking the marker
-          object3D.setAttribute('visible', 'true');
-          marker.setAttribute('visible', 'false'); // Hide the marker since we don't need it anymore
-
-          // Disable further detection of the marker
-          isObjectAnchored = true;
-        }
-      });
-
-      // Optional: handle marker lost event, but detection is stopped
-      marker.addEventListener('markerLost', () => {
-        if (isObjectAnchored) {
-          console.log('Marker lost, object remains in world space.');
-        }
-      });
-    });
-  </script>
 </body>
 </html>
