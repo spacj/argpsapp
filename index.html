@@ -7,17 +7,14 @@
   <style>
     body { margin: 0; overflow: hidden; }
     a-scene { position: absolute; width: 100%; height: 100%; }
+    video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
   </style>
-  
-  <!-- A-Frame Library -->
-  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  
-  <!-- AR.js with GPS and Camera Integration -->
-  <script src="https://unpkg.com/aframe-ar.js@3.3.2/aframe-ar-nft.min.js"></script>
-  <script src="https://unpkg.com/aframe-gps-projected-component@0.1.1/dist/aframe-gps-projected-component.min.js"></script>
 </head>
 <body>
-  <!-- Scene Setup with GPS-Projected Entity and AR.js Camera Feed -->
+  <!-- Video element for Camera Feed -->
+  <video id="cameraFeed" autoplay playsinline></video>
+
+  <!-- Scene Setup for AR.js and GPS-based Objects -->
   <a-scene
     vr-mode-ui="enabled: false"
     embedded
@@ -37,18 +34,21 @@
     <a-entity camera gps-projected-camera></a-entity>
   </a-scene>
 
-  <!-- Script for Camera Access and Logging -->
+  <!-- Script to Access and Display Camera Feed -->
   <script>
-    // Ensure Camera Access is Requested
+    // Access camera and display it in the video element
+    const video = document.getElementById('cameraFeed');
+
     navigator.mediaDevices.getUserMedia({ video: true })
       .then((stream) => {
-        console.log('Camera access granted');
+        video.srcObject = stream;
+        console.log('Camera access granted and feed is playing.');
       })
       .catch((err) => {
         console.error('Camera access denied:', err);
       });
 
-    // Log Object's GPS Position when added
+    // Log when the GPS entity is added
     document.addEventListener('gps-entity-place-added', (event) => {
       console.log('3D Object added at GPS position:', event.detail.component.el.getAttribute('gps-projected-entity-place'));
     });
