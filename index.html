@@ -3,41 +3,72 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GPS-Based AR</title>
+  <title>Markerless AR with A-Frame</title>
   <style>
     body { margin: 0; overflow: hidden; }
     a-scene { position: absolute; width: 100%; height: 100%; }
   </style>
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  <!-- AR.js with GPS -->
-  <script src="https://unpkg.com/aframe-ar.js@3.3.2/aframe-ar-nft.min.js"></script>
-  <script src="https://unpkg.com/aframe-gps-projected-component@0.1.1/dist/aframe-gps-projected-component.min.js"></script>
+  <!-- AR.js -->
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar-nft.min.js"></script>
 </head>
 <body>
-  <a-scene
-    embedded
-    arjs="sourceType: webcam; debugUIEnabled: false;"
-    gps-projected
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: true">
-    
-    <!-- 3D Object (Box) anchored to GPS coordinates -->
-    <a-box 
-      color="red"
-      scale="3 3 3"
-      gps-projected-entity-place="latitude: 52.5200; longitude: 13.4050" 
-      animation="property: rotation; to: 360 360 0; loop: true; dur: 10000">
-    </a-box>
+  <a-scene embedded arjs="sourceType: webcam; canvasWidth: 640; canvasHeight: 480;">
+    <!-- Lighting setup -->
+    <a-light type="ambient" color="#ffffff"></a-light>
+    <a-light type="point" intensity="1" position="2 4 4"></a-light>
 
-    <!-- A camera element -->
-    <a-entity camera gps-projected-camera></a-entity>
+    <!-- The camera element -->
+    <a-entity camera></a-entity>
+
+    <!-- The Hiro marker used for initial detection -->
+    <a-marker preset="hiro" id="hiro-marker" visible="false">
+      <!-- This is only for detection, not for rendering objects -->
+    </a-marker>
+
+    <!-- The object that will appear and be anchored -->
+    <a-entity id="my-object" geometry="primitive: box; width: 1; height: 1; depth: 1;" material="color: red;" scale="2 2 2" position="0 0 -1"></a-entity>
 
   </a-scene>
 
   <script>
-    document.addEventListener('gps-entity-place-added', (event) => {
-      console.log('Object added to GPS position:', event.detail.component.el.getAttribute('gps-projected-entity-place'));
+    document.addEventListener('DOMContentLoaded', () => {
+      const marker = document.querySelector('#hiro-marker');
+      const object3D = document.querySelector('#my-object');
+      let isObjectAnchored = false;
+      let anchoredPosition = new THREE.Vector3();
+
+      // When the marker is found, anchor the object and stop further detection
+      marker.addEventListener('markerFound', () => {
+        if (!isObjectAnchored) {
+          console.log('Hiro marker detected!');
+
+          // Get and save the object's world position
+          const markerPosition = marker.object3D.getWorldPosition(new THREE.Vector3());
+          console.log('Marker position:', markerPosition);
+
+          // Save the object's position
+          anchoredPosition.copy(markerPosition);
+
+          // Now that the object is anchored, move it out of the marker, but keep it in world space
+          object3D.object3D.position.copy(anchoredPosition);
+
+          // Make sure the object is visible and stop tracking the marker
+          object3D.setAttribute('visible', 'true');
+          marker.setAttribute('visible', 'false'); // Hide the marker since we don't need it anymore
+
+          // Disable further detection of the marker
+          isObjectAnchored = true;
+        }
+      });
+
+      // Optional: handle marker lost event, but detection is stopped
+      marker.addEventListener('markerLost', () => {
+        if (isObjectAnchored) {
+          console.log('Marker lost, object remains in world space.');
+        }
+      });
     });
   </script>
 </body>
